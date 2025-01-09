@@ -178,5 +178,5 @@ func (h *MoviesHandler) Delete(c *gin.Context) {
         return
     }
 	delete(h.db, movie.Id)
-
+	c.Status(http.StatusOK)
 }
