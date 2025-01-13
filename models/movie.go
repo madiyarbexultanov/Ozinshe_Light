@@ -10,5 +10,5 @@ type Movie struct {
 	IsWatched	bool
 	TrailerUrl	string
 	PosterUrl	string	// not implemented
-	Genres		[]Genre	// not implemented
+	Genres		[]Genre	
 }
