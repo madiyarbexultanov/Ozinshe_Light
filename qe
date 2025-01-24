@@ -1,0 +1,23 @@
+[33mcommit cd7fa273604458e53cfe8ba17fc362e30790adbe[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Madiyar <bexultanovmadiyar@gmail.com>
+Date:   Tue Jan 14 00:40:09 2025 +0100
+
+    Repositories were implemented
+
+[33mcommit 54a37941a58841ecbcf4758640e850b2fd5f9eb7[m
+Author: Madiyar <bexultanovmadiyar@gmail.com>
+Date:   Thu Jan 9 12:58:37 2025 +0100
+
+    Update
+
+[33mcommit 9a7ad1ed1a011a022d3e7c1aac8ef488b06a3bf3[m
+Author: Madiyar <bexultanovmadiyar@gmail.com>
+Date:   Thu Jan 9 12:33:27 2025 +0100
+
+    CRUD methods were added
+
+[33mcommit 870c66cecebaf27f1aa5bd4d6518e41a0dfa2f42[m
+Author: github-classroom[bot] <66690702+github-classroom[bot]@users.noreply.github.com>
+Date:   Tue Sep 24 09:13:16 2024 +0000
+
+    Initial commit

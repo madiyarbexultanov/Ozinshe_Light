@@ -12,15 +12,6 @@ type GenresHandler struct {
 	genresRepo *repositories.GenresRepository
 }
 
-type createGenreRequest struct {
-	Id 		int
-	Title 	string
-}
-
-type updateGenreRequest struct {
-	Id 		int
-	Title 	string
-}
 
 func NewGenreHandler(
 	genresRepo *repositories.GenresRepository,) *GenresHandler{
@@ -30,7 +21,11 @@ func NewGenreHandler(
 }
 
 func (h *GenresHandler) FindAll(c *gin.Context) {
-	genres := h.genresRepo.FindAll(c)
+	genres, err := h.genresRepo.FindAll(c)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
 	c.JSON(http.StatusOK, genres)
 }
 
@@ -53,20 +48,19 @@ func (h *GenresHandler) FindById(c *gin.Context) {
 }
 
 func (h *GenresHandler) Create(c *gin.Context) {
-	var request createGenreRequest
+	var createGenre models.Genre
 
-	err := c.BindJSON(&request)
+	err := c.BindJSON(&createGenre)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.NewApiError("Couldn't bind json"))
 		return
 	}
 
-	genre := models.Genre {
-		Id: 			request.Id,
-		Title: 			request.Title,
-	}
-
-	id := h.genresRepo.Create(c, genre)
+	id, err := h.genresRepo.Create(c, createGenre)
+	if err != nil {
+        c.JSON(http.StatusNotFound, models.NewApiError(err.Error()))
+        return
+    }
 
 	c.JSON(http.StatusOK, gin.H{
 		"id": id,
@@ -88,19 +82,19 @@ func (h *GenresHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var request updateGenreRequest
-	err = c.BindJSON(&request)
+	var updateGenre models.Genre
+	err = c.BindJSON(&updateGenre)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.NewApiError("Couldn't bind json"))
 		return
 	}
 
-	genre := models.Genre {
-		Id:				request.Id,
-		Title: 			request.Title,
-	}
 
-	h.genresRepo.Update(c, id, genre)
+	err = h.genresRepo.Update(c, id, updateGenre)
+	if err != nil {
+        c.JSON(http.StatusNotFound, models.NewApiError(err.Error()))
+        return
+    }
 
 	c.Status(http.StatusOK)
 }
@@ -120,7 +114,11 @@ func (h *GenresHandler) Delete(c *gin.Context) {
 		return
 	}
 	
-	h.genresRepo.Delete(c, id)
+	err = h.genresRepo.Delete(c, id)
+	if err != nil {
+        c.JSON(http.StatusNotFound, models.NewApiError(err.Error()))
+        return
+    }
 	c.Status(http.StatusOK)
 }
 

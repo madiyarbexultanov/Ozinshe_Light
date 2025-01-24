@@ -42,7 +42,11 @@ func NewMoviesHandler(
 }
 
 func (h *MoviesHandler) FindAll(c *gin.Context) {
-	movies := h.moviesRepo.FindAll(c)
+	movies, err := h.moviesRepo.FindAll(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
 	c.JSON(http.StatusOK, movies)
 }
 
@@ -73,7 +77,11 @@ func (h *MoviesHandler) Create(c *gin.Context) {
 		return
 	}
 
-	genres := h.genresRepo.FindAllByIds(c, request.GenreIds)
+	genres, err := h.genresRepo.FindAllByIds(c, request.GenreIds)
+	if err != nil {
+        c.JSON(http.StatusNotFound, models.NewApiError(err.Error()))
+        return
+    }
 
 	movie := models.Movie {
 		Title: 			request.Title,
@@ -84,7 +92,11 @@ func (h *MoviesHandler) Create(c *gin.Context) {
 		Genres: 		genres,
 	}
 
-	id := h.moviesRepo.Create(c, movie)
+	id, err := h.moviesRepo.Create(c, movie)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"id": id,
@@ -113,7 +125,12 @@ func (h *MoviesHandler) Update(c *gin.Context) {
 		return
 	}
 
-	genres := h.genresRepo.FindAllByIds(c, request.GenreIds)
+	genres, err := h.genresRepo.FindAllByIds(c, request.GenreIds)
+	if err != nil {
+        c.JSON(http.StatusNotFound, models.NewApiError(err.Error()))
+        return
+    }
+
 	movie := models.Movie {
 		Title: 			request.Title,
 		Description:	request.Description,
