@@ -35,20 +35,31 @@ func main() {
 
     moviesRepository := repositories.NewMoviesRepository(conn)
     genresRepository := repositories.NewGenresRepository(conn)
+    WatchlistRepository := repositories.NewWatchlistRepository(conn)
     moviesHandler := handlers.NewMoviesHandler(genresRepository, moviesRepository)
     genresHandler := handlers.NewGenreHandler(genresRepository)
+    watchlistHandler := handlers.NewWatchlistHandler(WatchlistRepository)
+    imageHandler := handlers.NewImageHandlers()
 
     r.GET("/movies", moviesHandler.FindAll)     
     r.GET("/movies/:id", moviesHandler.FindById)
     r.POST("/movies", moviesHandler.Create)
     r.PUT("/movies/:id", moviesHandler.Update)
     r.DELETE("/movies/:id", moviesHandler.Delete)
+    r.PATCH("/movies/:movieId/rate", moviesHandler.SetRating)
+    r.PATCH("/movies/:movieId/setWatched", moviesHandler.SetWatched)
 
     r.GET("/genres", genresHandler.FindAll)     
     r.GET("/genres/:id", genresHandler.FindById)
     r.POST("/genres", genresHandler.Create)
     r.PUT("/genres/:id", genresHandler.Update)
     r.DELETE("/genres/:id", genresHandler.Delete)
+
+    r.GET("/images/:imageId", imageHandler.HandleGetImageById)
+
+    r.GET("/watchlist", watchlistHandler.FindAll)
+    r.POST("/watchlist/:movieId", watchlistHandler.AddToWatchlist)
+    r.DELETE("/watchlist/:movieId", watchlistHandler.Delete)
     
     r.Run(config.Config.AppHost)
 }

@@ -27,6 +27,7 @@ m.director,
 m.rating,
 m.is_watched,
 m.trailer_url,
+m.poster_url,
 g.id,
 g.title
 from movies m
@@ -56,6 +57,7 @@ where m.id = $1
 			&m.Rating,
 			&m.IsWatched,
 			&m.TrailerUrl,
+			&m.PosterUrl,
 			&g.Id,
 			&g.Title,
 		)
@@ -91,6 +93,7 @@ m.director,
 m.rating,
 m.is_watched,
 m.trailer_url,
+m.poster_url,
 g.id,
 g.title
 from movies m
@@ -119,6 +122,7 @@ join genres g on mg.genre_id  = g.id
 			&m.Rating,
 			&m.IsWatched,
 			&m.TrailerUrl,
+			&m.PosterUrl,
 			&g.Id,
 			&g.Title,
 		)
@@ -156,15 +160,17 @@ func (r *MoviesRepository) Create(c context.Context, movie models.Movie) (int, e
 
 	row := tx.QueryRow(c,
 		`
-insert into movies(title, description, release_year, director, trailer_url)
-values($1, $2, $3, $4, $5)
+insert into movies(title, description, release_year, director, trailer_url, poster_url)
+values($1, $2, $3, $4, $5, $6)
 returning id
 	`,
 		movie.Title,
 		movie.Description,
 		movie.ReleaseYear,
 		movie.Director,
-		movie.TrailerUrl)
+		movie.TrailerUrl,
+		movie.PosterUrl,
+	)
 
 	err = row.Scan(&id)
 	if err != nil {
@@ -202,13 +208,15 @@ description = $2,
 release_year = $3,
 director = $4,
 trailer_url = $5
-where id = $6
+poster_url = $6
+where id = $7
 	`,
 		updatedMovie.Title,
 		updatedMovie.Description,
 		updatedMovie.ReleaseYear,
 		updatedMovie.Director,
 		updatedMovie.TrailerUrl,
+		updatedMovie.PosterUrl,
 		id)
 	if err != nil {
 		return err
@@ -252,6 +260,24 @@ func (r *MoviesRepository) Delete(c context.Context, id int) error {
 	err = tx.Commit(c)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (r *MoviesRepository) SetRating(c context.Context, id int, rating int) error {
+	_, err := r.db.Exec(c, "update movies set rating = $1 where id = $2", rating, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *MoviesRepository) SetWatched(c context.Context, id int, isWatched bool) error {
+	_, err := r.db.Exec(c, "update movies set is_watched = $1 where id = $2", isWatched, id)
+	if err != nil {
+	return err
 	}
 
 	return nil
