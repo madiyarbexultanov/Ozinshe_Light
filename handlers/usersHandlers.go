@@ -144,6 +144,12 @@ type UsersHandler struct {
 		return
 	}
 
+	_, err = h.userRepo.FindById(c, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, models.NewApiError("User not found"))
+		return
+	}
+
 	var request ChangePasswordRequest
 
 	err = c.BindJSON(&request)
