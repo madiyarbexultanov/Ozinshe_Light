@@ -47,7 +47,14 @@ func NewMoviesHandler(
 }
 
 func (h *MoviesHandler) FindAll(c *gin.Context) {
-	movies, err := h.moviesRepo.FindAll(c)
+	filters := models.MovieFilters {
+		SearchTerm: c.Query("search"),
+		IsWatched: 	c.Query("iswatched"),
+		GenreId: 	c.Query("genreids"),
+		Sort: 		c.Query("sort"),
+	}
+
+	movies, err := h.moviesRepo.FindAll(c, filters)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -60,7 +67,7 @@ func (h *MoviesHandler) FindById(c *gin.Context) {
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid Movie Id"))
+		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid movie id"))
 		return
 	}
 
@@ -122,7 +129,7 @@ func (h *MoviesHandler) Update(c *gin.Context) {
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid Movie Id"))
+		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid movie id"))
 		return
 	}
 
@@ -164,7 +171,7 @@ func (h *MoviesHandler) Delete(c *gin.Context) {
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid Movie Id"))
+		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid movie id"))
 		return
 	}
 
@@ -183,14 +190,14 @@ func (h *MoviesHandler) SetRating(c *gin.Context) {
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid Movie Id"))
+		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid movie id"))
 		return
 	}
 
 	ratingStr := c.Query("rating")
 	rating, err := strconv.Atoi(ratingStr)
 	if err != nil || rating < 1 || rating > 5 {
-		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid Rating Value"))
+		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid rating value"))
 		return
 	}
 
@@ -208,7 +215,7 @@ func (h *MoviesHandler) SetWatched(c *gin.Context) {
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid Movie Id"))
+		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid movie id"))
 		return
 	}
 

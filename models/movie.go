@@ -12,3 +12,10 @@ type Movie struct {
 	PosterUrl	string
 	Genres		[]Genre	
 }
+
+type MovieFilters struct {
+	SearchTerm	string
+	GenreId 	string
+	IsWatched 	string
+	Sort		string
+}

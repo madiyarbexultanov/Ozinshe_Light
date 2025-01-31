@@ -35,10 +35,14 @@ func main() {
 
     moviesRepository := repositories.NewMoviesRepository(conn)
     genresRepository := repositories.NewGenresRepository(conn)
-    WatchlistRepository := repositories.NewWatchlistRepository(conn)
+    watchlistRepository := repositories.NewWatchlistRepository(conn)
+    usersRepository := repositories.NewUsersRepository(conn)
+
     moviesHandler := handlers.NewMoviesHandler(genresRepository, moviesRepository)
-    genresHandler := handlers.NewGenreHandler(genresRepository)
-    watchlistHandler := handlers.NewWatchlistHandler(WatchlistRepository)
+    genresHandler := handlers.NewGenresHandler(genresRepository)
+    watchlistHandler := handlers.NewWatchlistHandler(watchlistRepository)
+    usersHandler := handlers.NewUsersHandler(usersRepository)
+
     imageHandler := handlers.NewImageHandlers()
 
     r.GET("/movies", moviesHandler.FindAll)     
@@ -60,6 +64,13 @@ func main() {
     r.GET("/watchlist", watchlistHandler.FindAll)
     r.POST("/watchlist/:movieId", watchlistHandler.AddToWatchlist)
     r.DELETE("/watchlist/:movieId", watchlistHandler.Delete)
+
+    r.GET("/users", usersHandler.FindAll)
+    r.GET("/users/:id", usersHandler.FindById)
+    r.POST("/users", usersHandler.Create)
+    r.PUT("/users/:id", usersHandler.Update)
+    r.PATCH("/users/:id/changePassword", usersHandler.ChangePasswordHash)
+    r.DELETE("/users/:id", usersHandler.Delete)
     
     r.Run(config.Config.AppHost)
 }

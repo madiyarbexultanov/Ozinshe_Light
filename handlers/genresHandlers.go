@@ -13,7 +13,7 @@ type GenresHandler struct {
 }
 
 
-func NewGenreHandler(
+func NewGenresHandler(
 	genresRepo *repositories.GenresRepository,) *GenresHandler{
 	return &GenresHandler{
 		genresRepo: genresRepo,
@@ -34,7 +34,7 @@ func (h *GenresHandler) FindById(c *gin.Context) {
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid Genre Id"))
+		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid genre id"))
 		return
 	}
 
@@ -72,7 +72,7 @@ func (h *GenresHandler) Update(c *gin.Context) {
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid Genre Id"))
+		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid genre id"))
 		return
 	}
 
@@ -104,7 +104,7 @@ func (h *GenresHandler) Delete(c *gin.Context) {
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid Genre Id"))
+		c.JSON(http.StatusBadRequest, models.NewApiError("Invalid genre id"))
 		return
 	}
 

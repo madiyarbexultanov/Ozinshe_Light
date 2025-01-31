@@ -2,8 +2,11 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 	"goozinshe/models"
+	"strconv"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -81,7 +84,7 @@ where m.id = $1
 	return *movie, nil
 }
 
-func (r *MoviesRepository) FindAll(c context.Context) ([]models.Movie, error) {
+func (r *MoviesRepository) FindAll(c context.Context, filters models.MovieFilters) ([]models.Movie, error) {
 	sql :=
 		`
 select 
@@ -99,9 +102,32 @@ g.title
 from movies m
 join movies_genres mg on mg.movie_id = m.id
 join genres g on mg.genre_id  = g.id
+where 1=1
 `
+	params := pgx.NamedArgs{}
 
-	rows, err := r.db.Query(c, sql)
+	if filters.SearchTerm != "" {
+		sql = fmt.Sprintf("%s and m.title ilike @s", sql)
+		params["s"] = fmt.Sprintf("%%%s%%", filters.SearchTerm)
+	}
+
+	if filters.GenreId != "" {
+		sql = fmt.Sprintf("%s and g.id = @genreId", sql)
+		params["genreId"] = filters.GenreId
+	}
+
+	if filters.IsWatched != "" {
+		isWatched, _ := strconv.ParseBool(filters.IsWatched)
+		sql = fmt.Sprintf("%s and m.is_watched = @isWatched", sql)
+		params["isWatched"] = isWatched
+	}
+
+	if filters.Sort != "" {
+		identifier := pgx.Identifier{filters.Sort}
+		sql = fmt.Sprintf("%s order by m.%s", sql, identifier.Sanitize())
+	}
+
+	rows, err := r.db.Query(c, sql, params)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +135,7 @@ join genres g on mg.genre_id  = g.id
 	movies := make([]*models.Movie, 0)
 	moviesMap := make(map[int]*models.Movie)
 
-	for rows.Next() {
+	for rows.Next() { 
 		var m models.Movie
 		var g models.Genre
 
@@ -160,9 +186,9 @@ func (r *MoviesRepository) Create(c context.Context, movie models.Movie) (int, e
 
 	row := tx.QueryRow(c,
 		`
-insert into movies(title, description, release_year, director, trailer_url, poster_url)
-values($1, $2, $3, $4, $5, $6)
-returning id
+	insert into movies(title, description, release_year, director, trailer_url, poster_url)
+	values($1, $2, $3, $4, $5, $6)
+	returning id
 	`,
 		movie.Title,
 		movie.Description,
