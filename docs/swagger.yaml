@@ -98,12 +98,12 @@ info:
   title: Ozinshe API
   version: "1.0"
 paths:
-  /auth/signin:
+  /auth/signIn:
     post:
       consumes:
       - application/json
       parameters:
-      - description: User credentials
+      - description: Request body
         in: body
         name: request
         required: true
@@ -113,27 +113,24 @@ paths:
       - application/json
       responses:
         "200":
-          description: JWT Token
+          description: OK
           schema:
-            additionalProperties:
-              type: string
+            properties:
+              token:
+                type: string
             type: object
-        "400":
-          description: Invalid payload
-          schema:
-            $ref: '#/definitions/models.ApiError'
         "401":
-          description: Invalid credentials
+          description: authorization header required
           schema:
             $ref: '#/definitions/models.ApiError'
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ApiError'
-      summary: Authenticate user
+      summary: Sign In
       tags:
       - auth
-  /auth/signout:
+  /auth/signOut:
     post:
       consumes:
       - application/json
@@ -142,10 +139,12 @@ paths:
       responses:
         "200":
           description: OK
-      summary: Logout user
+      security:
+      - Bearer: []
+      summary: Sign Out
       tags:
       - auth
-  /auth/user:
+  /auth/userInfo:
     get:
       consumes:
       - application/json
@@ -153,21 +152,22 @@ paths:
       - application/json
       responses:
         "200":
-          description: User info
+          description: OK
           schema:
             $ref: '#/definitions/handlers.userResponse'
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ApiError'
       security:
       - Bearer: []
-      summary: Get authenticated user info
+      summary: Get user info
       tags:
       - auth
   /genres:
     get:
-      description: Retrieves a list of all available genres
+      consumes:
+      - application/json
       produces:
       - application/json
       responses:
@@ -177,21 +177,26 @@ paths:
             items:
               $ref: '#/definitions/models.Genre'
             type: array
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/models.ApiError'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ApiError'
-      summary: Get all genres
+      security:
+      - Bearer: []
+      summary: Get genres list
       tags:
       - genres
     post:
       consumes:
       - application/json
-      description: Adds a new genre to the database
       parameters:
-      - description: Genre data
+      - description: Genre model
         in: body
-        name: genre
+        name: request
         required: true
         schema:
           $ref: '#/definitions/models.Genre'
@@ -199,47 +204,56 @@ paths:
       - application/json
       responses:
         "200":
-          description: Created genre ID
+          description: OK
           schema:
-            additionalProperties:
-              type: integer
+            properties:
+              id:
+                type: integer
             type: object
         "400":
-          description: Couldn't bind json
+          description: Validation error
           schema:
             $ref: '#/definitions/models.ApiError'
-        "404":
-          description: Not Found
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ApiError'
-      summary: Create a new genre
+      security:
+      - Bearer: []
+      summary: Create genre
       tags:
       - genres
   /genres/{id}:
     delete:
-      description: Deletes a genre by ID
+      consumes:
+      - application/json
       parameters:
-      - description: Genre ID
+      - description: Genre id
         in: path
         name: id
         required: true
         type: integer
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
         "400":
-          description: Invalid genre id
+          description: Validation error
           schema:
             $ref: '#/definitions/models.ApiError'
-        "404":
-          description: Genre not found
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ApiError'
-      summary: Delete a genre
+      security:
+      - Bearer: []
+      summary: Delete genre
       tags:
       - genres
     get:
-      description: Retrieves a single genre by its ID
+      consumes:
+      - application/json
       parameters:
       - description: Genre ID
         in: path
@@ -254,29 +268,30 @@ paths:
           schema:
             $ref: '#/definitions/models.Genre'
         "400":
-          description: Invalid genre id
+          description: Validation error
           schema:
             $ref: '#/definitions/models.ApiError'
-        "404":
-          description: Genre not found
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ApiError'
-      summary: Get a genre by ID
+      security:
+      - Bearer: []
+      summary: Find genre by id
       tags:
       - genres
     put:
       consumes:
       - application/json
-      description: Updates an existing genre by ID
       parameters:
-      - description: Genre ID
+      - description: Genre id
         in: path
         name: id
         required: true
         type: integer
-      - description: Updated genre data
+      - description: Genre model
         in: body
-        name: genre
+        name: request
         required: true
         schema:
           $ref: '#/definitions/models.Genre'
@@ -286,41 +301,44 @@ paths:
         "200":
           description: OK
         "400":
-          description: Invalid genre id or couldn't bind json
+          description: Validation error
           schema:
             $ref: '#/definitions/models.ApiError'
-        "404":
-          description: Genre not found
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ApiError'
-      summary: Update a genre
+      security:
+      - Bearer: []
+      summary: Update genre
       tags:
       - genres
-  /images/{imageId}:
+  /images/:imageId:
     get:
-      description: Retrieves an image file by its ID
+      consumes:
+      - application/json
       parameters:
-      - description: Image ID
+      - description: image id
         in: path
         name: imageId
         required: true
-        type: string
+        type: integer
       produces:
       - application/octet-stream
       responses:
         "200":
-          description: Binary image file
+          description: Image to download
           schema:
-            type: file
+            type: string
         "400":
           description: Invalid image id
           schema:
-            type: string
+            $ref: '#/definitions/models.ApiError'
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
-            type: string
-      summary: Get image by ID
+            $ref: '#/definitions/models.ApiError'
+      summary: Download image
       tags:
       - images
   /movies:

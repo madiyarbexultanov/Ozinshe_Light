@@ -24,7 +24,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/signin": {
+        "/auth/signIn": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -35,10 +35,10 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Authenticate user",
+                "summary": "Sign In",
                 "parameters": [
                     {
-                        "description": "User credentials",
+                        "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -49,28 +49,24 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "JWT Token",
+                        "description": "OK",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
+                            "properties": {
+                                "token": {
+                                    "type": "string"
+                                }
                             }
                         }
                     },
-                    "400": {
-                        "description": "Invalid payload",
-                        "schema": {
-                            "$ref": "#/definitions/models.ApiError"
-                        }
-                    },
                     "401": {
-                        "description": "Invalid credentials",
+                        "description": "authorization header required",
                         "schema": {
                             "$ref": "#/definitions/models.ApiError"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/models.ApiError"
                         }
@@ -78,8 +74,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/signout": {
+        "/auth/signOut": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -89,7 +90,7 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Logout user",
+                "summary": "Sign Out",
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -97,7 +98,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/user": {
+        "/auth/userInfo": {
             "get": {
                 "security": [
                     {
@@ -113,16 +114,16 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Get authenticated user info",
+                "summary": "Get user info",
                 "responses": {
                     "200": {
-                        "description": "User info",
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/handlers.userResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/models.ApiError"
                         }
@@ -132,14 +133,21 @@ const docTemplate = `{
         },
         "/genres": {
             "get": {
-                "description": "Retrieves a list of all available genres",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "genres"
                 ],
-                "summary": "Get all genres",
+                "summary": "Get genres list",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -148,6 +156,12 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/models.Genre"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ApiError"
                         }
                     },
                     "500": {
@@ -159,7 +173,11 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Adds a new genre to the database",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -169,11 +187,11 @@ const docTemplate = `{
                 "tags": [
                     "genres"
                 ],
-                "summary": "Create a new genre",
+                "summary": "Create genre",
                 "parameters": [
                     {
-                        "description": "Genre data",
-                        "name": "genre",
+                        "description": "Genre model",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -183,22 +201,24 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Created genre ID",
+                        "description": "OK",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": {
-                                "type": "integer"
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                }
                             }
                         }
                     },
                     "400": {
-                        "description": "Couldn't bind json",
+                        "description": "Validation error",
                         "schema": {
                             "$ref": "#/definitions/models.ApiError"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/models.ApiError"
                         }
@@ -208,14 +228,21 @@ const docTemplate = `{
         },
         "/genres/{id}": {
             "get": {
-                "description": "Retrieves a single genre by its ID",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "genres"
                 ],
-                "summary": "Get a genre by ID",
+                "summary": "Find genre by id",
                 "parameters": [
                     {
                         "type": "integer",
@@ -233,13 +260,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid genre id",
+                        "description": "Validation error",
                         "schema": {
                             "$ref": "#/definitions/models.ApiError"
                         }
                     },
-                    "404": {
-                        "description": "Genre not found",
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/models.ApiError"
                         }
@@ -247,7 +274,11 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Updates an existing genre by ID",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -257,18 +288,18 @@ const docTemplate = `{
                 "tags": [
                     "genres"
                 ],
-                "summary": "Update a genre",
+                "summary": "Update genre",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Genre ID",
+                        "description": "Genre id",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Updated genre data",
-                        "name": "genre",
+                        "description": "Genre model",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -281,13 +312,13 @@ const docTemplate = `{
                         "description": "OK"
                     },
                     "400": {
-                        "description": "Invalid genre id or couldn't bind json",
+                        "description": "Validation error",
                         "schema": {
                             "$ref": "#/definitions/models.ApiError"
                         }
                     },
-                    "404": {
-                        "description": "Genre not found",
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/models.ApiError"
                         }
@@ -295,15 +326,25 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Deletes a genre by ID",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "genres"
                 ],
-                "summary": "Delete a genre",
+                "summary": "Delete genre",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Genre ID",
+                        "description": "Genre id",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -314,13 +355,13 @@ const docTemplate = `{
                         "description": "OK"
                     },
                     "400": {
-                        "description": "Invalid genre id",
+                        "description": "Validation error",
                         "schema": {
                             "$ref": "#/definitions/models.ApiError"
                         }
                     },
-                    "404": {
-                        "description": "Genre not found",
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/models.ApiError"
                         }
@@ -328,20 +369,22 @@ const docTemplate = `{
                 }
             }
         },
-        "/images/{imageId}": {
+        "/images/:imageId": {
             "get": {
-                "description": "Retrieves an image file by its ID",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/octet-stream"
                 ],
                 "tags": [
                     "images"
                 ],
-                "summary": "Get image by ID",
+                "summary": "Download image",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Image ID",
+                        "type": "integer",
+                        "description": "image id",
                         "name": "imageId",
                         "in": "path",
                         "required": true
@@ -349,21 +392,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Binary image file",
+                        "description": "Image to download",
                         "schema": {
-                            "type": "file"
+                            "type": "string"
                         }
                     },
                     "400": {
                         "description": "Invalid image id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.ApiError"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.ApiError"
                         }
                     }
                 }

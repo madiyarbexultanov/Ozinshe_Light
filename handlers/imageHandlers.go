@@ -16,15 +16,15 @@ func NewImageHandlers() *imageHandlers {
 }
 
 // HandleGetImageById godoc
-// @Summary Get image by ID
-// @Description Retrieves an image file by its ID
+// @Summary      Download image
 // @Tags images
-// @Produce octet-stream
-// @Param imageId path string true "Image ID"
-// @Success 200 {file} file "Binary image file"
-// @Failure 400 {object} string "Invalid image id"
-// @Failure 500 {object} string "Internal server error"
-// @Router /images/{imageId} [get]
+// @Accept       json
+// @Produce      application/octet-stream
+// @Param imageId path int true "image id"
+// @Success      200  {string} string "Image to download"
+// @Failure 400 {object} models.ApiError "Invalid image id"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /images/:imageId [get]
 func (h *imageHandlers) HandleGetImageById(c *gin.Context) {
 	imageId := c.Param("imageId")
 	if imageId == "" {

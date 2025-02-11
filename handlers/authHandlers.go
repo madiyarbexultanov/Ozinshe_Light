@@ -27,16 +27,15 @@ type SignInRequest struct {
 }
 
 // SignIn godoc
-// @Summary      Authenticate user
-// @Tags         auth
+// @Tags auth
+// @Summary      Sign In
 // @Accept       json
 // @Produce      json
-// @Param        request body SignInRequest true "User credentials"
-// @Success      200 {object} map[string]string "JWT Token"
-// @Failure      400 {object} models.ApiError "Invalid payload"
-// @Failure      401 {object} models.ApiError "Invalid credentials"
-// @Failure      500 {object} models.ApiError "Internal server error"
-// @Router       /auth/signin [post]
+// @Param request body handlers.SignInRequest true "Request body"
+// @Success      200  {object} object{token=string} "OK"
+// @Failure   	 401  {object} models.ApiError "authorization header required"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /auth/signIn [post]
 func (h *AuthHandlers) SignIn(c *gin.Context) {
 	var request SignInRequest
 	if err := c.BindJSON(&request); err != nil {
@@ -71,25 +70,26 @@ func (h *AuthHandlers) SignIn(c *gin.Context) {
 }
 
 // SignOut godoc
-// @Summary      Logout user
-// @Tags         auth
+// @Summary      Sign Out
+// @Tags auth
 // @Accept       json
 // @Produce      json
-// @Success      200 "OK"
-// @Router       /auth/signout [post]
+// @Success      200   "OK"
+// @Router       /auth/signOut [post]
+// @Security Bearer
 func (h *AuthHandlers) SignOut(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
 // GetUserInfo godoc
-// @Summary      Get authenticated user info
-// @Tags         auth
+// @Summary      Get user info
+// @Tags auth
 // @Accept       json
 // @Produce      json
-// @Success      200 {object} userResponse "User info"
-// @Failure      500 {object} models.ApiError "Internal server error"
-// @Router       /auth/user [get]
-// @Security     Bearer
+// @Success      200  {object} handlers.userResponse "OK"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /auth/userInfo [get]
+// @Security Bearer
 func (h *AuthHandlers) GetUserInfo(c *gin.Context) {
 	userId := c.GetInt("userId")
 	user, err := h.usersRepo.FindById(c, userId)
