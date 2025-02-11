@@ -20,6 +20,14 @@ func NewGenresHandler(
 	}
 }
 
+// FindAll godoc
+// @Summary Get all genres
+// @Description Retrieves a list of all available genres
+// @Tags genres
+// @Produce json
+// @Success 200 {array} models.Genre
+// @Failure 500 {object} models.ApiError
+// @Router /genres [get]
 func (h *GenresHandler) FindAll(c *gin.Context) {
 	genres, err := h.genresRepo.FindAll(c)
 	if err != nil {
@@ -29,6 +37,16 @@ func (h *GenresHandler) FindAll(c *gin.Context) {
 	c.JSON(http.StatusOK, genres)
 }
 
+// FindById godoc
+// @Summary Get a genre by ID
+// @Description Retrieves a single genre by its ID
+// @Tags genres
+// @Produce json
+// @Param id path int true "Genre ID"
+// @Success 200 {object} models.Genre
+// @Failure 400 {object} models.ApiError "Invalid genre id"
+// @Failure 404 {object} models.ApiError "Genre not found"
+// @Router /genres/{id} [get]
 func (h *GenresHandler) FindById(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -47,6 +65,17 @@ func (h *GenresHandler) FindById(c *gin.Context) {
 	c.JSON(http.StatusOK, genre)
 }
 
+// Create godoc
+// @Summary Create a new genre
+// @Description Adds a new genre to the database
+// @Tags genres
+// @Accept json
+// @Produce json
+// @Param genre body models.Genre true "Genre data"
+// @Success 200 {object} map[string]int "Created genre ID"
+// @Failure 400 {object} models.ApiError "Couldn't bind json"
+// @Failure 404 {object} models.ApiError
+// @Router /genres [post]
 func (h *GenresHandler) Create(c *gin.Context) {
 	var createGenre models.Genre
 
@@ -67,6 +96,18 @@ func (h *GenresHandler) Create(c *gin.Context) {
 	})
 }
 
+// Update godoc
+// @Summary Update a genre
+// @Description Updates an existing genre by ID
+// @Tags genres
+// @Accept json
+// @Produce json
+// @Param id path int true "Genre ID"
+// @Param genre body models.Genre true "Updated genre data"
+// @Success 200
+// @Failure 400 {object} models.ApiError "Invalid genre id or couldn't bind json"
+// @Failure 404 {object} models.ApiError "Genre not found"
+// @Router /genres/{id} [put]
 func (h *GenresHandler) Update(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -99,6 +140,15 @@ func (h *GenresHandler) Update(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// Delete godoc
+// @Summary Delete a genre
+// @Description Deletes a genre by ID
+// @Tags genres
+// @Param id path int true "Genre ID"
+// @Success 200
+// @Failure 400 {object} models.ApiError "Invalid genre id"
+// @Failure 404 {object} models.ApiError "Genre not found"
+// @Router /genres/{id} [delete]
 func (h *GenresHandler) Delete(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)

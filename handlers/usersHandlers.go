@@ -24,6 +24,11 @@ type createUserRequest struct {
 	Password string `json:"password" binding:"required,min=8"`
 }
 
+type updateUserRequest struct {
+	Name  string
+	Email string
+}
+
 type userResponse struct {
 	Id    int    `json:"id"`
 	Name  string `json:"name"`
@@ -34,6 +39,15 @@ type ChangePasswordRequest struct {
 	Password string `json:"password" binding:"required,min=8"`
 }
 
+// FindAll godoc
+// @Tags users
+// @Summary      Get users list
+// @Accept       json
+// @Produce      json
+// @Success      200  {array} handlers.userResponse "OK"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /users [get]
+// @Security Bearer
 func (h *UsersHandler) FindAll(c *gin.Context) {
 	users, err := h.userRepo.FindAll(c)
 	if err != nil {
@@ -47,6 +61,18 @@ func (h *UsersHandler) FindAll(c *gin.Context) {
 	c.JSON(http.StatusOK, dtos)
 }
 
+// FindById godoc
+// @Tags users
+// @Summary      Find users by id
+// @Accept       json
+// @Produce      json
+// @Param id path int true "User id"
+// @Success      200  {array} handlers.userResponse "OK"
+// @Failure   	 400  {object} models.ApiError "Invalid user id"
+// @Failure   	 404  {object} models.ApiError "User not found"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /users/{id} [get]
+// @Security Bearer
 func (h *UsersHandler) FindById(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -63,6 +89,17 @@ func (h *UsersHandler) FindById(c *gin.Context) {
 	c.JSON(http.StatusOK, userResponse{Id: user.Id, Name: user.Name, Email: user.Email})
 }
 
+// Create godoc
+// @Tags users
+// @Summary      Create user
+// @Accept       json
+// @Produce      json
+// @Param request body handlers.createUserRequest true "User data"
+// @Success      200  {object} object{id=int} "OK"
+// @Failure   	 400  {object} models.ApiError "Invalid data"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /users [post]
+// @Security Bearer
 func (h *UsersHandler) Create(c *gin.Context) {
 	var request createUserRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -87,6 +124,19 @@ func (h *UsersHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"id": id})
 }
 
+// Update godoc
+// @Tags users
+// @Summary      Update user
+// @Accept       json
+// @Produce      json
+// @Param id path int true "User id"
+// @Param request body handlers.updateUserRequest true "User data"
+// @Success      200  {object} object{id=int} "OK"
+// @Failure   	 400  {object} models.ApiError "Invalid data"
+// @Failure   	 404  {object} models.ApiError "User not found"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /users/{id} [put]
+// @Security Bearer
 func (h *UsersHandler) Update(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -94,13 +144,22 @@ func (h *UsersHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var request models.User
+	var request updateUserRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, models.NewApiError("Couldn't bind json"))
 		return
 	}
 
-	if err := h.userRepo.Update(c, id, request); err != nil {
+	user, err := h.userRepo.FindById(c, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, models.NewApiError("User not found"))
+		return
+	}
+
+	user.Name = request.Name
+	user.Email = request.Email
+
+	if err := h.userRepo.Update(c, id, user); err != nil {
 		c.JSON(http.StatusNotFound, models.NewApiError(err.Error()))
 		return
 	}
@@ -108,6 +167,19 @@ func (h *UsersHandler) Update(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// ChangePassword godoc
+// @Tags users
+// @Summary      Change user password
+// @Accept       json
+// @Produce      json
+// @Param id path int true "User id"
+// @Param request body handlers.ChangePasswordRequest true "Password data"
+// @Success      200  "OK"
+// @Failure   	 400  {object} models.ApiError "Invalid data"
+// @Failure   	 404  {object} models.ApiError "User not found"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /users/{id}/changePassword [patch]
+// @Security Bearer
 func (h *UsersHandler) ChangePasswordHash(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -139,6 +211,18 @@ func (h *UsersHandler) ChangePasswordHash(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// Delete godoc
+// @Tags users
+// @Summary      Delete user
+// @Accept       json
+// @Produce      json
+// @Param id path int true "User id"
+// @Success      200  "OK"
+// @Failure   	 400  {object} models.ApiError "Invalid data"
+// @Failure   	 404  {object} models.ApiError "User not found"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /users/{id} [delete]
+// @Security Bearer
 func (h *UsersHandler) Delete(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

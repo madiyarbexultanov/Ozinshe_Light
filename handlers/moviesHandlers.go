@@ -29,12 +29,13 @@ type createMovieRequest struct {
 }
 
 type updateMovieRequest struct {
-	Title 		string
-	Description string
-	ReleaseYear int
-	Director 	string
-	TrailerUrl 	string
-	GenreIds 	[]int
+	Title       string                `form:"title"`
+	Description string                `form:"description"`
+	ReleaseYear int                   `form:"releaseYear"`
+	Director    string                `form:"director"`
+	TrailerUrl  string                `form:"trailerUrl"`
+	GenreIds    []int                 `form:"genreIds"`
+	Poster      *multipart.FileHeader `form:"poster"`
 }
 
 func NewMoviesHandler(
@@ -46,6 +47,26 @@ func NewMoviesHandler(
 	}
 }
 
+
+func (h *MoviesHandler) saveMoviePoster(c *gin.Context, poster *multipart.FileHeader) (string, error) {
+	filename := fmt.Sprintf("%s%s", uuid.NewString(), filepath.Ext(poster.Filename))
+	filepath := fmt.Sprintf("images/%s", filename)
+	err := c.SaveUploadedFile(poster, filepath)
+
+	return filename, err
+}
+
+// FindById godoc
+// @Summary      Find by id
+// @Tags movies
+// @Accept       json
+// @Produce      json
+// @Param id path int true "Movie id"
+// @Success      200  {object} models.Movie "OK"
+// @Failure   	 400  {object} models.ApiError "Invalid movie id"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /movies/{id} [get]
+// @Security Bearer
 func (h *MoviesHandler) FindAll(c *gin.Context) {
 	filters := models.MovieFilters {
 		SearchTerm: c.Query("search"),
@@ -62,6 +83,16 @@ func (h *MoviesHandler) FindAll(c *gin.Context) {
 	c.JSON(http.StatusOK, movies)
 }
 
+// FindAll godoc
+// @Summary      Get all movies
+// @Tags movies
+// @Accept       json
+// @Produce      json
+// @Param filters query models.MovieFilters true "Movie filters"
+// @Success      200  {object} models.Movie "OK"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /movies [get]
+// @Security Bearer
 func (h *MoviesHandler) FindById(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -80,6 +111,23 @@ func (h *MoviesHandler) FindById(c *gin.Context) {
 	c.JSON(http.StatusOK, movie)
 }
 
+// Create godoc
+// @Summary      Create movie
+// @Tags movies
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param title formData string true "Title"
+// @Param description formData string true "Description"
+// @Param releaseYear formData int true "Year of release"
+// @Param director formData string true "Director"
+// @Param trailerUrl formData string true "Trailer URL"
+// @Param genreIds formData []int true "Genre ids"
+// @Param poster formData file true "Poster image"
+// @Success      200  {object} object{id=int} "OK"
+// @Failure   	 400  {object} models.ApiError "Invalid data"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /movies [post]
+// @Security Bearer
 func (h *MoviesHandler) Create(c *gin.Context) {
 	var request createMovieRequest
 
@@ -95,9 +143,7 @@ func (h *MoviesHandler) Create(c *gin.Context) {
         return
     }
 
-	filename := fmt.Sprintf("%s%s", uuid.NewString(), filepath.Ext(request.Poster.Filename))
-	filepath := fmt.Sprintf("images/%s", filename)
-	err = c.SaveUploadedFile(request.Poster, filepath)
+	filename, err := h.saveMoviePoster(c, request.Poster)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.NewApiError(err.Error()))
 		return
@@ -124,6 +170,24 @@ func (h *MoviesHandler) Create(c *gin.Context) {
 	})
 }
 
+// Update godoc
+// @Summary      Update movie
+// @Tags movies
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param id path int true "Movie id"
+// @Param title formData string true "Title"
+// @Param description formData string true "Description"
+// @Param releaseYear formData int true "Year of release"
+// @Param director formData string true "Director"
+// @Param trailerUrl formData string true "Trailer URL"
+// @Param genreIds formData []int true "Genre ids"
+// @Param poster formData file true "Poster image"
+// @Success      200  {object} object{id=int} "OK"
+// @Failure   	 400  {object} models.ApiError "Invalid data"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /movies/{id} [put]
+// @Security Bearer
 func (h *MoviesHandler) Update(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -140,7 +204,7 @@ func (h *MoviesHandler) Update(c *gin.Context) {
 	}
 
 	var request updateMovieRequest
-	err = c.BindJSON(&request)
+	err = c.Bind(&request)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.NewApiError("Couldn't bind json"))
 		return
@@ -152,13 +216,20 @@ func (h *MoviesHandler) Update(c *gin.Context) {
         return
     }
 
+	filename, err := h.saveMoviePoster(c, request.Poster)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.NewApiError(err.Error()))
+		return
+	}
+
 	movie := models.Movie {
-		Title: 			request.Title,
-		Description:	request.Description,
-		ReleaseYear:	request.ReleaseYear,
-		Director:		request.Director,
-		TrailerUrl: 	request.TrailerUrl,
-		Genres: 		genres,
+		Title:       request.Title,
+		Description: request.Description,
+		ReleaseYear: request.ReleaseYear,
+		Director:    request.Director,
+		TrailerUrl:  request.TrailerUrl,
+		PosterUrl:   filename,
+		Genres:      genres,
 	}
 
 	h.moviesRepo.Update(c, id, movie)
@@ -166,6 +237,17 @@ func (h *MoviesHandler) Update(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// Delete godoc
+// @Summary      Delete movie
+// @Tags movies
+// @Accept       json
+// @Produce      json
+// @Param id path int true "Movie id"
+// @Success      200  "OK"
+// @Failure   	 400  {object} models.ApiError "Invalid data"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /movies/{id} [delete]
+// @Security Bearer
 func (h *MoviesHandler) Delete(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -185,6 +267,18 @@ func (h *MoviesHandler) Delete(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// HandleSetRating godoc
+// @Summary      Set movie rating
+// @Tags movies
+// @Accept       json
+// @Produce      json
+// @Param id path int true "Movie id"
+// @Param rating query int true "Movie rating"
+// @Success      200  "OK"
+// @Failure   	 400  {object} models.ApiError "Invalid data"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /movies/{id}/rate [patch]
+// @Security Bearer
 func (h *MoviesHandler) SetRating(c *gin.Context) {
 	idStr := c.Param("movieId")
 	id, err := strconv.Atoi(idStr)
@@ -210,6 +304,18 @@ func (h *MoviesHandler) SetRating(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// HandleSetWatched godoc
+// @Summary      Mark movie as watched
+// @Tags movies
+// @Accept       json
+// @Produce      json
+// @Param id path int true "Movie id"
+// @Param isWatched query bool true "Flag value"
+// @Success      200  "OK"
+// @Failure   	 400  {object} models.ApiError "Invalid data"
+// @Failure   	 500  {object} models.ApiError
+// @Router       /movies/{id}/setWatched [patch]
+// @Security Bearer
 func (h *MoviesHandler) SetWatched(c *gin.Context) {
 	idStr := c.Param("movieId")
 	id, err := strconv.Atoi(idStr)

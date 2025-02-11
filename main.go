@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"goozinshe/config"
+	"goozinshe/docs"
 	"goozinshe/handlers"
 	"goozinshe/logger"
 	"goozinshe/middlewares"
@@ -10,12 +11,37 @@ import (
 	"time"
 
 	"github.com/gin-contrib/cors"
-	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/spf13/viper"
+
+	ginzap "github.com/gin-contrib/zap"
+	swaggerfiles "github.com/swaggo/files"
+	swagger "github.com/swaggo/gin-swagger"
 )
 
+// @title           Ozinshe API
+// @version         1.0
+// @description     Personal online platform providing information about films
+// @termsOfService  http://swagger.io/terms/
+//
+// @contact.name   Madiyar Bexultanov
+// @contact.url    https://www.linkedin.com/in/madiyar-bexultanov-b21902258/
+// @contact.email  bexultanovmadiyar@gmail.com
+//
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+//
+// @host      localhost:8081
+// @BasePath  /
+//
+// @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+//
+// @externalDocs.description  OpenAPI
+// @externalDocs.url          https://swagger.io/resources/open-api/
 func main() {
 	r := gin.New()
 
@@ -95,6 +121,9 @@ func main() {
     unauthorized.POST("/auth/signIn", authHandler.SignIn)
 
     unauthorized.GET("/images/:imageId", imageHandler.HandleGetImageById)
+
+    docs.SwaggerInfo.BasePath = "/"
+    unauthorized.GET("/swagger/*any", swagger.WrapHandler(swaggerfiles.Handler))
 
     logger.Info("Application starting...")
     

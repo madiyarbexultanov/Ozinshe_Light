@@ -26,6 +26,17 @@ type SignInRequest struct {
 	Password 	string
 }
 
+// SignIn godoc
+// @Summary      Authenticate user
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body SignInRequest true "User credentials"
+// @Success      200 {object} map[string]string "JWT Token"
+// @Failure      400 {object} models.ApiError "Invalid payload"
+// @Failure      401 {object} models.ApiError "Invalid credentials"
+// @Failure      500 {object} models.ApiError "Internal server error"
+// @Router       /auth/signin [post]
 func (h *AuthHandlers) SignIn(c *gin.Context) {
 	var request SignInRequest
 	if err := c.BindJSON(&request); err != nil {
@@ -59,10 +70,26 @@ func (h *AuthHandlers) SignIn(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": tokenString})
 }
 
+// SignOut godoc
+// @Summary      Logout user
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Success      200 "OK"
+// @Router       /auth/signout [post]
 func (h *AuthHandlers) SignOut(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// GetUserInfo godoc
+// @Summary      Get authenticated user info
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} userResponse "User info"
+// @Failure      500 {object} models.ApiError "Internal server error"
+// @Router       /auth/user [get]
+// @Security     Bearer
 func (h *AuthHandlers) GetUserInfo(c *gin.Context) {
 	userId := c.GetInt("userId")
 	user, err := h.usersRepo.FindById(c, userId)
