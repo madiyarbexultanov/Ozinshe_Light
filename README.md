@@ -1,40 +1,39 @@
 ## Ozinshe
 
-Личная онлайн-платформа, предоставляющая информацию о фильмах. Система позволяет оценивать фильмы, помечать фильмы 
-просмотренными и формировать очередь просмотра.
+A personal online platform providing movie information. The system allows users to rate movies, mark them as watched, and create a watchlist.
 
-### Функциональные требования
+### Functional Requirements
 
-* Создавать, редактировать, удалять фильмы и их данные: включает название, описание, режиссера, год производства, жанр, ссылку на трейлер и постер;
-* Иметь возможность сортировать и фильтровать фильмы по критериям;
-* Иметь возможность оценивать фильмы;
-* Иметь возможность формировать очередь просмотров;
-* Иметь возможность пометить фильм просмотренным;
-* Создавать, редактировать, удалять жанры;
-* Создавать, редактировать, сбрасывать пароль, удалять пользователей;
-* Пользователь должен авторизоваться в системе по имейлу и паролю для входа
+* Create, edit, and delete movies and their details, including title, description, director, release year, genre, trailer link, and poster;
+* Sort and filter movies based on various criteria;
+* Rate movies;
+* Create a watchlist;
+* Mark movies as watched;
+* Create, edit, and delete genres;
+* Create, edit, reset passwords, and delete users;
+* Users must log in with an email and password to access the system.
 
 ### Нефункциональные требования
 
-* Наличие документированного API по спецификации OpenAPI
-* Возможность контейнеризировать приложение в Docker
+* Provide a documented API following the OpenAPI specification;
+* Support containerization via Docker.
 
-## Как запустить UI?
+## How to Run the UI?
 
-Чтобы запустить UI Озенше локально тебе нужен будет [git](https://git-scm.com/) и [docker](https://www.docker.com/).  
+To run the Ozinshe UI locally, you need Git and Docker.
 
-### Запуск UI без авторизации
+### Running the UI Without Authentication
 
 ```
 docker run --name ozinshe-ui -p "8080:3000" -e VITE_API_URL="http://localhost:8081" -e VITE_FEATURE_AUTH="false" -e VITE_SIMPLIFIED_MOVIE="true" -d kchsherbakov/ozinshe-ui:latest
 ```
 
-### Запуск UI с обязательной авторизацией
-
+### Running the UI with Authentication Enabled
 ```
 docker run --name ozinshe-ui -p "8080:3000" -e VITE_API_URL="http://localhost:8081" -e VITE_FEATURE_AUTH="true" -e VITE_SIMPLIFIED_MOVIE="false" -d kchsherbakov/ozinshe-ui:latest
 ```
 
-Для логина используй:
-* логин: `admin@admin.com`
-* пароль: `admin`
+To log in, use the following credentials:
+
+Email: admin@admin.com
+Password: admin
