@@ -13,7 +13,7 @@ A personal online platform providing movie information. The system allows users 
 * Create, edit, reset passwords, and delete users;
 * Users must log in with an email and password to access the system.
 
-### Нефункциональные требования
+### Non-Functional Requirements
 
 * Provide a documented API following the OpenAPI specification;
 * Support containerization via Docker.
