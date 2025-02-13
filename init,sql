@@ -1,0 +1,41 @@
+create table movies (
+    id serial primary key,
+    title text,
+    description text,
+    release_year int,
+    director text,
+    rating int default 0,
+    is_watched bool default false,
+    trailer_url text,
+    poster_url text
+);
+
+create table genres
+(
+    id    serial primary key,
+    title text
+);
+
+create table movies_genres
+(
+    movie_id int references movies (id),
+    genre_id int references genres (id),
+    primary key (movie_id, genre_id)
+);
+
+create table watchlist
+(
+    movie_id int primary key references movies (id),
+    added_at timestamp not null
+);
+
+create table users
+(
+    id            serial primary key,
+    name          text not null,
+    email         text not null unique,
+    password_hash text not null
+);
+
+insert into users (name, email, password_hash)
+values ('admin', 'admin@admin.com', '$2y$10$iCCKNv39bVatC7HelfyfGOLWi9cNYP2zmbb59vIraMMXSnzP5Nczq');

@@ -131,7 +131,25 @@ func main() {
 }
 
 func loadConfig() error {
+    viper.AutomaticEnv()
     viper.SetConfigFile(".env")
+
+    if err := viper.BindEnv("APP_HOST"); err != nil {
+    viper.SetDefault("APP_HOST", ":8080")
+    }
+    
+    if err := viper.BindEnv("DB_CONNECTION_STRING"); err != nil {
+    viper.SetDefault("DB_CONNECTION_STRING", "postgres://postgres:postgres@localhost:5432/postgres")
+    }
+    
+    if err := viper.BindEnv("JWT_SECRET_KEY"); err != nil {
+    viper.SetDefault("JWT_SECRET_KEY", "supersecretkey")
+    }
+    
+    if err := viper.BindEnv("JWT_EXPIRE_DURATION"); err != nil {
+    viper.SetDefault("JWT_EXPIRE_DURATION", "24h")
+    }
+
     err := viper.ReadInConfig()
     if err != nil {
         return err

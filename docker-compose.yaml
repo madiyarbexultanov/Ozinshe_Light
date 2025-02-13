@@ -1,0 +1,28 @@
+services:
+  api:
+    image: madiyargo/ozinshe-deploy:latest
+    container_name: ozinshe-go
+    restart: always
+    environment:
+      APP_HOST: ":8081"
+      DB_CONNECTION_STRING: "postgres://postgres:postgres@db/postgres"
+      JWT_SECRET_KEY: "supersecretkey"
+      JWT_EXPIRE_DURATION: "24h"
+    ports:
+      - "8081:8081"
+    depends_on:
+      - db
+  
+  db:
+    image: postgres:latest
+    container_name: ozinshe-db
+    restart: always
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    volumes:
+      - "db-data:/var/lib/postgresql/data"
+      - "./init.sql:/docker-entrypoint-initdb.d/init.sql"
+
+volumes:
+  db-data:
